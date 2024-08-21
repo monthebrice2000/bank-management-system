@@ -1,0 +1,213 @@
+server:
+  port: 8081
+  # servlet:
+  #   session:
+  #     persistent: true
+  #     timeout: 15
+  #     # store-dir: /tmp
+  #     cookie:
+  #       name: transaction-cookie.dat
+  #       # path: /tmp/cookies
+  # http2:
+  #   enabled: true
+
+spring:
+  application:
+    name: bank-api
+  profiles:
+    active:
+      - dev
+      - wss-profile
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: MST7MDT
+  # mvc:
+  #   contentnegotiation:
+  #     favor-parameter: true
+  # mvc:
+  #   view:
+  #     suffix: .jsp
+  #     prefix: /WEB-INF/my-views/
+  datasource:
+    username: springboot
+    password: rocks!
+    # driver-class-name: com.mysql.jdbc.Driver
+    # url: jdbc:mysql://localhost:3306/testdb?autoReconnect=true&useSSL=false
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    # jndi-name: java:jboss/ds/todos
+  jpa:
+    generate-ddl: true
+    hibernate:  
+      ddl-auto: create-drop
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+  redis:
+    host: localhost
+    port: 6379
+    # password: my-secret
+  data:
+    rest:
+      base-path: /api-rest
+  security:
+    user:
+      username: username
+      password: password
+      roles: ADMIN,USER
+    # oauth2:
+    #   client:
+    #     registration:
+    #       bank:
+    #         clientid: Ov23liDf95nSRQWmceWA
+    #         client-secret: c45ff7f53d64a5c71c595545ac45cc8c949792d6
+    #         client-name: ToDo App with GitHub Authentication
+    #         provider: github
+    #         scope: user
+    #         redirect-uri: http://localhost:8081/login/oauth2/code/github
+  autoconfigure:
+    exclude: 
+      - org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration
+      - org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+
+
+info:
+  application-name: ${spring.application.name}
+  developer:
+    name: Awesome Developer
+    email: awesome@example.com
+
+      
+
+bank-api:
+  url: http://localhost:8081
+  base-path: /api/transactions
+  username: matt@example.com
+  password: secret
+
+transaction:
+  authentication:
+    find-by-email-uri: http://localhost:8081/api-rest/users/search/findByEmailIgnoreCase
+    username: matt@example.com
+    password: secret
+    
+
+
+management:
+  # server:
+  #   servlet:
+  #     context-path: /admin
+  #   port: 8081
+  #   address: 127.0.0.1
+  endpoints:
+    # enabled-by-default: false
+    web:
+      exposure:
+        include: "*"
+      # cors:
+      #   allowed-origins: http://mydomain.com
+      #   allowed-methods: GET, POST
+      # base-path: /monitor
+    # shutdown:
+    #   enabled: true
+    jmx:
+      exposure:
+        include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      enabled: true
+      show-details: always
+      probes:
+        enabled: true
+  security: 
+    enabled: false
+      
+
+logging:
+  level:
+    # root: DEBUG
+    org:
+      springframework:
+        data: INFO
+        jdbc:
+          core:
+            JdbcTemplate: DEBUG
+        # web: DEBUG
+      apache:
+        http: DEBUG
+      security: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: activemq-profile
+  # jms:
+  #   pub-sub-domain: true
+  activemq:
+    # in-memory: true
+    broker-url: tcp://localhost:61616
+    user: artemis
+    password: artemis
+
+bank:
+  jms:
+    transaction:
+      destination: transactionDestination
+---
+spring:
+  config:
+    activate:
+      on-profile: rabbitmq-profile
+  # jms:
+  #   pub-sub-domain: true
+  rabbitmq:
+    # in-memory: true
+    host: localhost
+    username: guest
+    password: guest
+    port: 5672
+    virtual-host: /production
+
+bank:
+  amqp:
+    transaction:
+      queue: spring-boot
+---
+spring:
+  config:
+    activate:
+      on-profile: redis-profile
+  # jms:
+  #   pub-sub-domain: true
+  redis:
+    # in-memory: true
+    host: localhost
+    password: guest
+    port: 6379
+    database: 0
+
+bank:
+  redis:
+    transaction:
+      topic: todos
+---
+spring:
+  config:
+    activate:
+      on-profile: ws-profile
+  data: 
+    rest:
+      base-path: /api-rest
+
+bank:
+  ws:
+    transaction:
+      endpoint: /stomp
+      broker: /transactions
+      app: /transactions-api-ws
+---
